@@ -125,7 +125,7 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   vim.keymap.set('n', 'q', close_term, map_opts)
 end
 
----@param direction number 1 for next, -1 for previous
+---@param direction number
 function TerminalMultiplexer:_navigate_terminal(direction)
   if #self.terminal_order == 0 then
     vim.notify('No terminals available', vim.log.levels.INFO)

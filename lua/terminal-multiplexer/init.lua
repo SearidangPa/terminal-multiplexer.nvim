@@ -172,7 +172,7 @@ function TerminalMultiplexer:_navigate_terminal(direction)
       vim.api.nvim_win_hide(current_term_state.win)
       vim.api.nvim_win_hide(current_term_state.footer_win)
     end
-  end, 100)
+  end, 25)
 end
 
 ---@param float_terminal_state Float_Term_State

@@ -38,11 +38,9 @@ function TerminalMultiplexer:search_terminal()
 end
 
 ---@param terminal_name string
----@return Float_Term_State?
+---@return Float_Term_State
 function TerminalMultiplexer:toggle_float_terminal(terminal_name)
-  if not terminal_name then
-    return nil
-  end
+  assert(terminal_name, 'Terminal name is required')
 
   local current_float_term_state = self.all_terminals[terminal_name]
   if not current_float_term_state then
@@ -82,6 +80,7 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
     current_float_term_state.chan = vim.bo.channel
   end
 
+  self:_set_up_buffer_keybind(current_float_term_state)
   self.last_terminal_name = terminal_name
   return self.all_terminals[terminal_name]
 end
@@ -114,11 +113,9 @@ function TerminalMultiplexer:_navigate_terminal(direction)
     return
   end
 
-  -- Find the current buffer
   local current_buf = vim.api.nvim_get_current_buf()
   local current_terminal_name = nil
 
-  -- Find which terminal we're currently in
   for terminal_name, state in pairs(self.all_terminals) do
     if state.buf == current_buf then
       current_terminal_name = terminal_name
@@ -127,12 +124,10 @@ function TerminalMultiplexer:_navigate_terminal(direction)
   end
 
   if not current_terminal_name then
-    -- If we're not in a terminal, just open the first one
     self:toggle_float_terminal(self.terminal_order[1])
     return
   end
 
-  -- Find the index of the current terminal
   local current_index = nil
   for i, name in ipairs(self.terminal_order) do
     if name == current_terminal_name then
@@ -142,16 +137,13 @@ function TerminalMultiplexer:_navigate_terminal(direction)
   end
 
   if not current_index then
-    -- This shouldn't happen, but just in case
     vim.notify('Current terminal not found in order list', vim.log.levels.ERROR)
     return
   end
 
-  -- Calculate the next index with wrapping
   local next_index = ((current_index - 1 + direction) % #self.terminal_order) + 1
   local next_terminal_name = self.terminal_order[next_index]
 
-  -- Hide current terminal and show the next one
   local current_term_state = self.all_terminals[current_terminal_name]
   if vim.api.nvim_win_is_valid(current_term_state.win) then
     vim.api.nvim_win_hide(current_term_state.win)
@@ -202,23 +194,6 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
     style = 'minimal',
     border = 'none',
   })
-
-  local map_opts = { noremap = true, silent = true, buffer = float_terminal_state.buf }
-  local next_term = function() self:_navigate_terminal(1) end
-  local prev_term = function() self:_navigate_terminal(-1) end
-
-  vim.keymap.set('n', '>', next_term, map_opts)
-  vim.keymap.set('n', '<', prev_term, map_opts)
-
-  local close_term = function()
-    if vim.api.nvim_win_is_valid(float_terminal_state.footer_win) then
-      vim.api.nvim_win_hide(float_terminal_state.footer_win)
-    end
-    if vim.api.nvim_win_is_valid(float_terminal_state.win) then
-      vim.api.nvim_win_hide(float_terminal_state.win)
-    end
-  end
-  vim.keymap.set('n', 'q', close_term, map_opts)
 end
 
 vim.api.nvim_create_autocmd('TermOpen', {

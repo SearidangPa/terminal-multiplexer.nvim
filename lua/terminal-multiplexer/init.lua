@@ -106,6 +106,25 @@ end
 
 --- === Private functions ===
 
+function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
+  local map_opts = { noremap = true, silent = true, buffer = current_float_term_state.buf }
+  local next_term = function() self:navigate_terminal(1) end
+  local prev_term = function() self:navigate_terminal(-1) end
+
+  vim.keymap.set('n', '>', next_term, map_opts)
+  vim.keymap.set('n', '<', prev_term, map_opts)
+
+  local close_term = function()
+    if vim.api.nvim_win_is_valid(current_float_term_state.footer_win) then
+      vim.api.nvim_win_hide(current_float_term_state.footer_win)
+    end
+    if vim.api.nvim_win_is_valid(current_float_term_state.win) then
+      vim.api.nvim_win_hide(current_float_term_state.win)
+    end
+  end
+  vim.keymap.set('n', 'q', close_term, map_opts)
+end
+
 ---@param direction number 1 for next, -1 for previous
 function TerminalMultiplexer:_navigate_terminal(direction)
   if #self.terminal_order == 0 then

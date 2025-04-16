@@ -26,11 +26,11 @@ function TerminalMultiplexer:search_terminal()
     table.insert(all_terminal_names, test_name)
   end
 
-  local handle_choice = function(choice)
-    if not choice then
+  local handle_choice = function(terminal_name)
+    if not terminal_name then
+      vim.notify('No terminal selected', vim.log.levels.INFO)
       return
     end
-    local terminal_name = choice:match '[\t%s][^\t%s]+[\t%s]+(.+)$'
     self:toggle_float_terminal(terminal_name)
   end
 

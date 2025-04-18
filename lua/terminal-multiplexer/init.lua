@@ -1,10 +1,29 @@
+---@class TerminalMultiplexer
+---@field all_terminals table<string, Float_Term_State>
+---@field terminal_order string[]
+---@field last_terminal_name string?
+---@field powershell boolean
+---@field augroup number
+---@field toggle_float_terminal fun(self: TerminalMultiplexer, terminal_name: string): Float_Term_State
+---@field create_float_window fun(self: TerminalMultiplexer, float_terminal_state: Float_Term_State, terminal_name: string): nil
+---@field delete_terminal fun(self: TerminalMultiplexer, terminal_name: string): nil
 local TerminalMultiplexer = {}
 TerminalMultiplexer.__index = TerminalMultiplexer
-vim.cmd [[highlight TerminalNameUnderline gui=underline]]
+
+---@class Float_Term_State
+---@field buf number
+---@field win number
+---@field footer_buf number
+---@field footer_win number
+---@field chan number
+
+---@class TerminalMultiplexer.Options
+---@field powershell? boolean
 
 ---@param opts TerminalMultiplexer.Options
 ---@return TerminalMultiplexer
 function TerminalMultiplexer.new(opts)
+  vim.cmd [[highlight TerminalNameUnderline gui=underline]]
   opts = opts or {}
   local self = setmetatable({}, TerminalMultiplexer)
   self.all_terminals = {} --- @type table<string, Float_Term_State>

@@ -5,6 +5,7 @@
 ---@field powershell boolean
 ---@field augroup number
 ---@field toggle_float_terminal fun(self: TerminalMultiplexer, terminal_name: string): Float_Term_State
+---@field search_terminal fun(self: TerminalMultiplexer): nil
 ---@field create_float_window fun(self: TerminalMultiplexer, float_terminal_state: Float_Term_State, terminal_name: string): nil
 ---@field delete_terminal fun(self: TerminalMultiplexer, terminal_name: string): nil
 local TerminalMultiplexer = {}

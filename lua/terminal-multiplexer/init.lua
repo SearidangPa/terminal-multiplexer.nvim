@@ -12,7 +12,7 @@ local TerminalMultiplexer = {}
 TerminalMultiplexer.__index = TerminalMultiplexer
 
 ---@class Float_Term_State
----@field buf number
+---@field bufnr number
 ---@field win number
 ---@field footer_buf number
 ---@field footer_win number
@@ -65,7 +65,7 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   local current_float_term_state = self.all_terminals[terminal_name]
   if not current_float_term_state then
     current_float_term_state = {
-      buf = -1,
+      bufnr = -1,
       win = -1,
       chan = 0,
       footer_buf = -1,
@@ -87,7 +87,7 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   end
 
   self:_create_float_window(current_float_term_state, terminal_name)
-  if vim.bo[current_float_term_state.buf].buftype ~= 'terminal' then
+  if vim.bo[current_float_term_state.bufnr].buftype ~= 'terminal' then
     if vim.fn.has 'win32' == 1 and self.powershell then
       vim.cmd.term 'powershell.exe'
     else
@@ -108,7 +108,7 @@ function TerminalMultiplexer:delete_terminal(terminal_name)
     return
   end
 
-  vim.api.nvim_buf_delete(float_terminal.buf, { force = true })
+  vim.api.nvim_buf_delete(float_terminal.bufnr, { force = true })
   vim.api.nvim_buf_delete(float_terminal.footer_buf, { force = true })
   self.all_terminals[terminal_name] = nil
 
@@ -152,7 +152,7 @@ function TerminalMultiplexer:_navigate_terminal(direction)
   local current_terminal_name = nil
 
   for terminal_name, state in pairs(self.all_terminals) do
-    if state.buf == current_buf then
+    if state.bufnr == current_buf then
       current_terminal_name = terminal_name
       break
     end
@@ -199,8 +199,8 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
   local row = math.floor((vim.o.columns - width))
   local col = math.floor((vim.o.lines - height))
 
-  if float_terminal_state.buf == -1 then
-    float_terminal_state.buf = vim.api.nvim_create_buf(false, true)
+  if float_terminal_state.bufnr == -1 then
+    float_terminal_state.bufnr = vim.api.nvim_create_buf(false, true)
   end
   float_terminal_state.footer_buf = vim.api.nvim_create_buf(false, true)
 
@@ -212,7 +212,7 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
   ---@diagnostic disable-next-line: deprecated
   vim.api.nvim_buf_add_highlight(float_terminal_state.footer_buf, -1, 'TerminalNameUnderline', 0, #padding, -1)
 
-  float_terminal_state.win = vim.api.nvim_open_win(float_terminal_state.buf, true, {
+  float_terminal_state.win = vim.api.nvim_open_win(float_terminal_state.bufnr, true, {
     relative = 'editor',
     width = width,
     height = height - 3,
@@ -238,13 +238,13 @@ end
 ---@param terminal_name string
 function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal_name)
   local total_width = math.floor(vim.o.columns)
-  local width = math.floor(total_width * 2 / 3) - 2 -- Use 2/3 of the screen width
+  local width = math.floor(total_width * 2 / 3) - 1 -- Use 2/3 of the screen width
   local height = math.floor(vim.o.lines)
   local row = 0 -- Start from the top
   local col = 0 -- Start from the left
 
-  if float_terminal_state.buf == -1 then
-    float_terminal_state.buf = vim.api.nvim_create_buf(false, true)
+  if float_terminal_state.bufnr == -1 then
+    float_terminal_state.bufnr = vim.api.nvim_create_buf(false, true)
   end
 
   float_terminal_state.footer_buf = vim.api.nvim_create_buf(false, true)
@@ -256,7 +256,7 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
   ---@diagnostic disable-next-line: deprecated
   vim.api.nvim_buf_add_highlight(float_terminal_state.footer_buf, -1, 'TerminalNameUnderline', 0, #padding, -1)
 
-  float_terminal_state.win = vim.api.nvim_open_win(float_terminal_state.buf, true, {
+  float_terminal_state.win = vim.api.nvim_open_win(float_terminal_state.bufnr, true, {
     relative = 'editor',
     width = width,
     height = height - 3,

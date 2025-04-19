@@ -1,17 +1,17 @@
 ---@class TerminalMultiplexer
----@field all_terminals table<string, Float_Term_State>
+---@field all_terminals table<string, FloatTermState>
 ---@field terminal_order string[]
 ---@field last_terminal_name string?
 ---@field powershell boolean
 ---@field augroup number
----@field toggle_float_terminal fun(self: TerminalMultiplexer, terminal_name: string): Float_Term_State
+---@field toggle_float_terminal fun(self: TerminalMultiplexer, terminal_name: string): FloatTermState
 ---@field search_terminal fun(self: TerminalMultiplexer): nil
----@field create_float_window fun(self: TerminalMultiplexer, float_terminal_state: Float_Term_State, terminal_name: string): nil
+---@field create_float_window fun(self: TerminalMultiplexer, float_terminal_state: FloatTermState, terminal_name: string): nil
 ---@field delete_terminal fun(self: TerminalMultiplexer, terminal_name: string): nil
 local TerminalMultiplexer = {}
 TerminalMultiplexer.__index = TerminalMultiplexer
 
----@class Float_Term_State
+---@class FloatTermState
 ---@field bufnr number
 ---@field win number
 ---@field footer_buf number
@@ -27,7 +27,7 @@ function TerminalMultiplexer.new(opts)
   vim.cmd [[highlight TerminalNameUnderline gui=underline]]
   opts = opts or {}
   local self = setmetatable({}, TerminalMultiplexer)
-  self.all_terminals = {} --- @type table<string, Float_Term_State>
+  self.all_terminals = {} --- @type table<string, FloatTermState>
   self.terminal_order = {} --- @type string[]
   self.last_terminal_name = nil
   self.powershell = opts.powershell or false
@@ -58,7 +58,7 @@ function TerminalMultiplexer:search_terminal()
 end
 
 ---@param terminal_name string
----@return Float_Term_State
+---@return FloatTermState
 function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   assert(terminal_name, 'Terminal name is required')
 
@@ -191,7 +191,7 @@ function TerminalMultiplexer:_navigate_terminal(direction)
   end, 25)
 end
 
----@param float_terminal_state Float_Term_State
+---@param float_terminal_state FloatTermState
 ---@param terminal_name string
 function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal_name)
   local width = math.floor(vim.o.columns)
@@ -234,7 +234,7 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
   })
 end
 
----@param float_terminal_state Float_Term_State
+---@param float_terminal_state FloatTermState
 ---@param terminal_name string
 function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal_name)
   local total_width = math.floor(vim.o.columns)

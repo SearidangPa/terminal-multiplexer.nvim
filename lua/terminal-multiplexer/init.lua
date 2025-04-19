@@ -234,6 +234,50 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
   })
 end
 
+---@param float_terminal_state Float_Term_State
+---@param terminal_name string
+function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal_name)
+  local total_width = math.floor(vim.o.columns)
+  local width = math.floor(total_width * 2 / 3) - 1 -- Use 2/3 of the screen width
+  local height = math.floor(vim.o.lines)
+  local row = 0 -- Start from the top
+  local col = 0 -- Start from the left
+
+  if float_terminal_state.buf == -1 then
+    float_terminal_state.buf = vim.api.nvim_create_buf(false, true)
+  end
+
+  float_terminal_state.footer_buf = vim.api.nvim_create_buf(false, true)
+  local padding = string.rep(' ', width - #terminal_name - 1)
+  local footer_text = padding .. terminal_name
+  vim.api.nvim_buf_set_lines(float_terminal_state.footer_buf, 0, -1, false, { footer_text })
+  ---@diagnostic disable-next-line: deprecated
+  vim.api.nvim_buf_add_highlight(float_terminal_state.footer_buf, -1, 'Title', 0, 0, -1)
+  ---@diagnostic disable-next-line: deprecated
+  vim.api.nvim_buf_add_highlight(float_terminal_state.footer_buf, -1, 'TerminalNameUnderline', 0, #padding, -1)
+
+  float_terminal_state.win = vim.api.nvim_open_win(float_terminal_state.buf, true, {
+    relative = 'editor',
+    width = width,
+    height = height - 3,
+    row = row,
+    col = col,
+    style = 'minimal',
+    border = 'rounded',
+  })
+
+  vim.api.nvim_win_call(float_terminal_state.win, function() vim.cmd 'normal! G' end)
+  float_terminal_state.footer_win = vim.api.nvim_open_win(float_terminal_state.footer_buf, false, {
+    relative = 'editor', -- Changed from 'win' to 'editor' for consistent positioning
+    width = width,
+    height = 1,
+    row = height - 3,
+    col = col,
+    style = 'minimal',
+    border = 'none',
+  })
+end
+
 vim.api.nvim_create_autocmd('TermOpen', {
   group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),
   callback = function()

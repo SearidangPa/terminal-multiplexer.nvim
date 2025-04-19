@@ -88,12 +88,8 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
 
   self:_create_float_window(current_float_term_state, terminal_name)
   if vim.bo[current_float_term_state.buf].buftype ~= 'terminal' then
-    if vim.fn.has 'win32' == 1 then
-      if self.powershell then
-        vim.cmd.term 'powershell.exe'
-      else
-        vim.cmd.term 'cmd.exe'
-      end
+    if vim.fn.has 'win32' == 1 and self.powershell then
+      vim.cmd.term 'powershell.exe'
     else
       vim.cmd.term()
     end

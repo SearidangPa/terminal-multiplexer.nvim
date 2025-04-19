@@ -238,7 +238,7 @@ end
 ---@param terminal_name string
 function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal_name)
   local total_width = math.floor(vim.o.columns)
-  local width = math.floor(total_width * 2 / 3) - 1 -- Use 2/3 of the screen width
+  local width = math.floor(total_width * 2 / 3) - 2 -- Use 2/3 of the screen width
   local height = math.floor(vim.o.lines)
   local row = 0 -- Start from the top
   local col = 0 -- Start from the left

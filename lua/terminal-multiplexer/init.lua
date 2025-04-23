@@ -225,7 +225,7 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
   float_terminal_state.win = vim.api.nvim_open_win(float_terminal_state.bufnr, true, {
     relative = 'editor',
     width = width,
-    height = height - 3,
+    height = height - 2,
     row = row,
     col = col,
     style = 'minimal',
@@ -237,7 +237,7 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
     relative = 'win',
     width = width,
     height = 1,
-    row = height - 3,
+    row = height - 2,
     col = 0,
     style = 'minimal',
     border = 'none',

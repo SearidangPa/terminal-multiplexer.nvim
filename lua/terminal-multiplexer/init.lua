@@ -1,17 +1,17 @@
 ---@class TerminalMultiplexer
----@field all_terminals table<string, FloatTermState>
+---@field all_terminals table<string, TerminalMultiplexer.FloatTermState>
 ---@field terminal_order string[]
 ---@field last_terminal_name string?
 ---@field powershell boolean
 ---@field augroup number
----@field toggle_float_terminal fun(self: TerminalMultiplexer, terminal_name: string): FloatTermState
+---@field toggle_float_terminal fun(self: TerminalMultiplexer, terminal_name: string): TerminalMultiplexer.FloatTermState
 ---@field search_terminal fun(self: TerminalMultiplexer): nil
----@field create_float_window fun(self: TerminalMultiplexer, float_terminal_state: FloatTermState, terminal_name: string): nil
+---@field create_float_window fun(self: TerminalMultiplexer, float_terminal_state: TerminalMultiplexer.FloatTermState, terminal_name: string): nil
 ---@field delete_terminal fun(self: TerminalMultiplexer, terminal_name: string): nil
 local TerminalMultiplexer = {}
 TerminalMultiplexer.__index = TerminalMultiplexer
 
----@class FloatTermState
+---@class TerminalMultiplexer.FloatTermState
 ---@field bufnr number
 ---@field win number
 ---@field footer_buf number
@@ -27,7 +27,7 @@ function TerminalMultiplexer.new(opts)
   vim.cmd [[highlight TerminalNameUnderline gui=underline]]
   opts = opts or {}
   local self = setmetatable({}, TerminalMultiplexer)
-  self.all_terminals = {} --- @type table<string, FloatTermState>
+  self.all_terminals = {} --- @type table<string, TerminalMultiplexer.FloatTermState>
   self.terminal_order = {} --- @type string[]
   self.last_terminal_name = nil
   self.powershell = opts.powershell or false
@@ -58,7 +58,7 @@ function TerminalMultiplexer:search_terminal()
 end
 
 ---@param terminal_name string
----@return FloatTermState
+---@return TerminalMultiplexer.FloatTermState
 function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   assert(terminal_name, 'Terminal name is required')
 
@@ -191,7 +191,7 @@ function TerminalMultiplexer:_navigate_terminal(direction)
   end, 25)
 end
 
----@param float_terminal_state FloatTermState
+---@param float_terminal_state TerminalMultiplexer.FloatTermState
 ---@param terminal_name string
 function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal_name)
   local width = math.floor(vim.o.columns)
@@ -233,50 +233,6 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
     border = 'none',
   })
 end
-
--- ---@param float_terminal_state FloatTermState
--- ---@param terminal_name string
--- function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal_name)
---   local total_width = math.floor(vim.o.columns)
---   local width = math.floor(total_width * 2 / 3) - 2 -- Use 2/3 of the screen width
---   local height = math.floor(vim.o.lines)
---   local row = 0 -- Start from the top
---   local col = 0 -- Start from the left
---
---   if float_terminal_state.bufnr == -1 then
---     float_terminal_state.bufnr = vim.api.nvim_create_buf(false, true)
---   end
---
---   float_terminal_state.footer_buf = vim.api.nvim_create_buf(false, true)
---   local padding = string.rep(' ', width - #terminal_name - 1)
---   local footer_text = padding .. terminal_name
---   vim.api.nvim_buf_set_lines(float_terminal_state.footer_buf, 0, -1, false, { footer_text })
---   ---@diagnostic disable-next-line: deprecated
---   vim.api.nvim_buf_add_highlight(float_terminal_state.footer_buf, -1, 'Title', 0, 0, -1)
---   ---@diagnostic disable-next-line: deprecated
---   vim.api.nvim_buf_add_highlight(float_terminal_state.footer_buf, -1, 'TerminalNameUnderline', 0, #padding, -1)
---
---   float_terminal_state.win = vim.api.nvim_open_win(float_terminal_state.bufnr, true, {
---     relative = 'editor',
---     width = width,
---     height = height - 3,
---     row = row,
---     col = col,
---     style = 'minimal',
---     border = 'rounded',
---   })
---
---   vim.api.nvim_win_call(float_terminal_state.win, function() vim.cmd 'normal! G' end)
---   float_terminal_state.footer_win = vim.api.nvim_open_win(float_terminal_state.footer_buf, false, {
---     relative = 'editor', -- Changed from 'win' to 'editor' for consistent positioning
---     width = width,
---     height = 1,
---     row = height - 3,
---     col = col,
---     style = 'minimal',
---     border = 'none',
---   })
--- end
 
 vim.api.nvim_create_autocmd('TermOpen', {
   group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),

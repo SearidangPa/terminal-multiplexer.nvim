@@ -4,6 +4,7 @@
 ---@field last_terminal_name string?
 ---@field powershell boolean
 ---@field augroup number
+---@field ns_id number
 ---@field toggle_float_terminal fun(self: TerminalMultiplexer, terminal_name: string): TerminalMultiplexer.FloatTermState
 ---@field search_terminal fun(self: TerminalMultiplexer): nil
 ---@field create_float_window fun(self: TerminalMultiplexer, float_terminal_state: TerminalMultiplexer.FloatTermState, terminal_name: string): nil
@@ -32,6 +33,7 @@ function TerminalMultiplexer.new(opts)
   self.last_terminal_name = nil
   self.powershell = opts.powershell or false
   self.augroup = vim.api.nvim_create_augroup('TerminalMultiplexer', { clear = true }) --- @type number
+  self.ns_id = vim.api.nvim_create_namespace 'TerminalMultiplexer'
   return self
 end
 
@@ -207,10 +209,18 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
   local padding = string.rep(' ', width - #terminal_name - 1)
   local footer_text = padding .. terminal_name
   vim.api.nvim_buf_set_lines(float_terminal_state.footer_buf, 0, -1, false, { footer_text })
-  ---@diagnostic disable-next-line: deprecated
-  vim.api.nvim_buf_add_highlight(float_terminal_state.footer_buf, -1, 'Title', 0, 0, -1)
-  ---@diagnostic disable-next-line: deprecated
-  vim.api.nvim_buf_add_highlight(float_terminal_state.footer_buf, -1, 'TerminalNameUnderline', 0, #padding, -1)
+
+  vim.api.nvim_buf_set_extmark(float_terminal_state.footer_buf, self.ns_id, 0, 0, {
+    end_row = 0,
+    end_col = #footer_text,
+    hl_group = 'Title',
+  })
+
+  vim.api.nvim_buf_set_extmark(float_terminal_state.footer_buf, self.ns_id, 0, #padding, {
+    end_row = 0,
+    end_col = #footer_text,
+    hl_group = 'TerminalNameUnderline',
+  })
 
   float_terminal_state.win = vim.api.nvim_open_win(float_terminal_state.bufnr, true, {
     relative = 'editor',

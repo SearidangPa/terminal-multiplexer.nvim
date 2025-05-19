@@ -136,7 +136,6 @@ end
 function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   local self_ref = self
 
-  vim.print(current_float_term_state.bufnr)
   local map_opts = { noremap = true, silent = true, buffer = current_float_term_state.bufnr }
   local next_term = function() self_ref:_navigate_terminal(1) end
   local prev_term = function() self_ref:_navigate_terminal(-1) end

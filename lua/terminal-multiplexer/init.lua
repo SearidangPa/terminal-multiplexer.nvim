@@ -63,8 +63,9 @@ end
 ---@return TerminalMultiplexer.FloatTermState
 function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   assert(terminal_name, 'Terminal name is required')
+  local self_ref = self
 
-  local current_float_term_state = self.all_terminals[terminal_name]
+  local current_float_term_state = self_ref.all_terminals[terminal_name]
   if not current_float_term_state then
     current_float_term_state = {
       bufnr = -1,
@@ -73,11 +74,11 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
       footer_buf = -1,
       footer_win = -1,
     }
-    self.all_terminals[terminal_name] = current_float_term_state
+    self_ref.all_terminals[terminal_name] = current_float_term_state
   end
 
-  if not vim.tbl_contains(self.terminal_order, terminal_name) then
-    table.insert(self.terminal_order, terminal_name)
+  if not vim.tbl_contains(self_ref.terminal_order, terminal_name) then
+    table.insert(self_ref.terminal_order, terminal_name)
   end
 
   local is_visible = vim.api.nvim_win_is_valid(current_float_term_state.win)
@@ -85,12 +86,12 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   if is_visible then
     vim.api.nvim_win_hide(current_float_term_state.win)
     vim.api.nvim_win_hide(current_float_term_state.footer_win)
-    return self.all_terminals[terminal_name]
+    return self_ref.all_terminals[terminal_name]
   end
 
-  self:_create_float_window(current_float_term_state, terminal_name)
+  self_ref:_create_float_window(current_float_term_state, terminal_name)
   if vim.bo[current_float_term_state.bufnr].buftype ~= 'terminal' then
-    if vim.fn.has 'win32' == 1 and self.powershell then
+    if vim.fn.has 'win32' == 1 and self_ref.powershell then
       vim.cmd.term [["C:\Program Files\PowerShell\7\pwsh.exe"]]
     else
       vim.cmd.term()
@@ -98,9 +99,9 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
     current_float_term_state.chan = vim.bo.channel
   end
 
-  self:_set_up_buffer_keybind(current_float_term_state)
-  self.last_terminal_name = terminal_name
-  return self.all_terminals[terminal_name]
+  self_ref:_set_up_buffer_keybind(current_float_term_state)
+  self_ref.last_terminal_name = terminal_name
+  return self_ref.all_terminals[terminal_name]
 end
 
 ---@param terminal_name string Name of the terminal to delete
@@ -125,27 +126,30 @@ end
 --- === Private functions ===
 
 function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
+  local self_ref = self
+
+  vim.print(current_float_term_state.bufnr)
   local map_opts = { noremap = true, silent = true, buffer = current_float_term_state.buf }
-  local next_term = function() self:_navigate_terminal(1) end
-  local prev_term = function() self:_navigate_terminal(-1) end
+  local next_term = function() self_ref:_navigate_terminal(1) end
+  local prev_term = function() self_ref:_navigate_terminal(-1) end
 
   vim.keymap.set('n', '>', next_term, map_opts)
   vim.keymap.set('n', '<', prev_term, map_opts)
 
-  local close_term = function()
+  vim.keymap.set('n', 'q', function()
     if vim.api.nvim_win_is_valid(current_float_term_state.footer_win) then
       vim.api.nvim_win_hide(current_float_term_state.footer_win)
     end
     if vim.api.nvim_win_is_valid(current_float_term_state.win) then
       vim.api.nvim_win_hide(current_float_term_state.win)
     end
-  end
-  vim.keymap.set('n', 'q', close_term, map_opts)
+  end, map_opts)
 end
 
 ---@param direction number
 function TerminalMultiplexer:_navigate_terminal(direction)
-  if #self.terminal_order == 0 then
+  local self_ref = self
+  if #self_ref.terminal_order == 0 then
     vim.notify('No terminals available', vim.log.levels.INFO)
     return
   end
@@ -153,7 +157,7 @@ function TerminalMultiplexer:_navigate_terminal(direction)
   local current_buf = vim.api.nvim_get_current_buf()
   local current_terminal_name = nil
 
-  for terminal_name, state in pairs(self.all_terminals) do
+  for terminal_name, state in pairs(self_ref.all_terminals) do
     if state.bufnr == current_buf then
       current_terminal_name = terminal_name
       break
@@ -161,12 +165,12 @@ function TerminalMultiplexer:_navigate_terminal(direction)
   end
 
   if not current_terminal_name then
-    self:toggle_float_terminal(self.terminal_order[1])
+    self_ref:toggle_float_terminal(self_ref.terminal_order[1])
     return
   end
 
   local current_index = nil
-  for i, name in ipairs(self.terminal_order) do
+  for i, name in ipairs(self_ref.terminal_order) do
     if name == current_terminal_name then
       current_index = i
       break
@@ -178,14 +182,14 @@ function TerminalMultiplexer:_navigate_terminal(direction)
     return
   end
 
-  local next_index = ((current_index - 1 + direction) % #self.terminal_order) + 1
-  local next_terminal_name = self.terminal_order[next_index]
+  local next_index = ((current_index - 1 + direction) % #self_ref.terminal_order) + 1
+  local next_terminal_name = self_ref.terminal_order[next_index]
 
-  self:toggle_float_terminal(next_terminal_name)
+  self_ref:toggle_float_terminal(next_terminal_name)
 
   -- Hide current terminal
   vim.defer_fn(function()
-    local current_term_state = self.all_terminals[current_terminal_name]
+    local current_term_state = self_ref.all_terminals[current_terminal_name]
     if vim.api.nvim_win_is_valid(current_term_state.win) then
       vim.api.nvim_win_hide(current_term_state.win)
       vim.api.nvim_win_hide(current_term_state.footer_win)

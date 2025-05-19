@@ -37,6 +37,33 @@ function TerminalMultiplexer.new(opts)
   return self
 end
 
+vim.api.nvim_create_autocmd('TermOpen', {
+  group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),
+  callback = function()
+    vim.opt.number = false
+    vim.opt.relativenumber = false
+  end,
+})
+
+---@param terminal_name string
+function TerminalMultiplexer:delete_terminal(terminal_name)
+  local float_terminal = self.all_terminals[terminal_name]
+  if not float_terminal then
+    return
+  end
+
+  vim.api.nvim_buf_delete(float_terminal.bufnr, { force = true })
+  vim.api.nvim_buf_delete(float_terminal.footer_buf, { force = true })
+  self.all_terminals[terminal_name] = nil
+
+  for i, name in ipairs(self.terminal_order) do
+    if name == terminal_name then
+      table.remove(self.terminal_order, i)
+      break
+    end
+  end
+end
+
 function TerminalMultiplexer:search_terminal()
   local opts = {
     prompt = 'Select terminal:',
@@ -104,32 +131,13 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   return self_ref.all_terminals[terminal_name]
 end
 
----@param terminal_name string Name of the terminal to delete
-function TerminalMultiplexer:delete_terminal(terminal_name)
-  local float_terminal = self.all_terminals[terminal_name]
-  if not float_terminal then
-    return
-  end
-
-  vim.api.nvim_buf_delete(float_terminal.bufnr, { force = true })
-  vim.api.nvim_buf_delete(float_terminal.footer_buf, { force = true })
-  self.all_terminals[terminal_name] = nil
-
-  for i, name in ipairs(self.terminal_order) do
-    if name == terminal_name then
-      table.remove(self.terminal_order, i)
-      break
-    end
-  end
-end
-
 --- === Private functions ===
 
 function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   local self_ref = self
 
   vim.print(current_float_term_state.bufnr)
-  local map_opts = { noremap = true, silent = true, buffer = current_float_term_state.buf }
+  local map_opts = { noremap = true, silent = true, buffer = current_float_term_state.bufnr }
   local next_term = function() self_ref:_navigate_terminal(1) end
   local prev_term = function() self_ref:_navigate_terminal(-1) end
 
@@ -247,13 +255,5 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
     border = 'none',
   })
 end
-
-vim.api.nvim_create_autocmd('TermOpen', {
-  group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),
-  callback = function()
-    vim.opt.number = false
-    vim.opt.relativenumber = false
-  end,
-})
 
 return TerminalMultiplexer

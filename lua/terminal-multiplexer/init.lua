@@ -126,14 +126,14 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
     current_float_term_state.chan = vim.bo.channel
   end
 
-  self_ref:_set_up_buffer_keybind(current_float_term_state, terminal_name)
+  self_ref:_set_up_buffer_keybind(current_float_term_state)
   self_ref.last_terminal_name = terminal_name
   return self_ref.all_terminals[terminal_name]
 end
 
 --- === Private functions ===
 
-function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state, terminal_name)
+function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   local self_ref = self
 
   local map_opts = { noremap = true, silent = true, buffer = current_float_term_state.bufnr }

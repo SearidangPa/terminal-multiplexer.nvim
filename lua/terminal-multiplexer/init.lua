@@ -153,10 +153,6 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state, te
   end
 
   vim.keymap.set('n', 'q', hide_terminal, map_opts)
-  vim.keymap.set('n', '<BS>', function()
-    hide_terminal()
-    self_ref:delete_terminal(terminal_name)
-  end, map_opts)
 end
 
 ---@param direction number

@@ -130,21 +130,6 @@ end
 
 --- === Private functions ===
 
-local function send_ctrl_c(current_float_term_state)
-  local is_windows = vim.fn.has 'win32' == 1 or vim.fn.has 'win64' == 1
-
-  if is_windows then
-    local shell = vim.o.shell:lower()
-    if shell:match 'powershell' or shell:match 'pwsh' then
-      vim.api.nvim_chan_send(current_float_term_state.chan, '\x1b')
-    else
-      vim.api.nvim_chan_send(current_float_term_state.chan, '\x03')
-    end
-  else
-    vim.api.nvim_chan_send(current_float_term_state.chan, '\x03')
-  end
-end
-
 function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   local self_ref = self
 
@@ -154,6 +139,8 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
 
   vim.keymap.set('n', '>', next_term, map_opts)
   vim.keymap.set('n', '<', prev_term, map_opts)
+
+  local function send_ctrl_c() vim.api.nvim_chan_send(current_float_term_state.chan, '\x03') end
 
   local function hide_terminal()
     if vim.api.nvim_win_is_valid(current_float_term_state.footer_win) then
@@ -166,6 +153,16 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
 
   vim.keymap.set('n', '<C-c>', send_ctrl_c, map_opts)
   vim.keymap.set('n', 'q', hide_terminal, map_opts)
+
+  vim.api.nvim_create_autocmd('BufDelete', {
+    group = self.augroup,
+    buffer = current_float_term_state.bufnr,
+    callback = function()
+      if vim.api.nvim_buf_is_valid(current_float_term_state.footer_buf) then
+        vim.api.nvim_buf_delete(current_float_term_state.footer_buf, { force = true })
+      end
+    end,
+  })
 end
 
 ---@param direction number

@@ -136,6 +136,10 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   vim.keymap.set('n', '>', next_term, map_opts)
   vim.keymap.set('n', '<', prev_term, map_opts)
 
+  local function send_ctrl_c()
+    vim.api.nvim_chan_send(current_float_term_state.chan, '\x03')
+  end
+
   local function hide_terminal()
     if vim.api.nvim_win_is_valid(current_float_term_state.footer_win) then
       vim.api.nvim_win_hide(current_float_term_state.footer_win)
@@ -145,6 +149,7 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
     end
   end
 
+  vim.keymap.set('n', '<C-c>', send_ctrl_c, map_opts)
   vim.keymap.set('n', 'q', hide_terminal, map_opts)
 end
 

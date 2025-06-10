@@ -37,15 +37,6 @@ function TerminalMultiplexer.new(opts)
   return self
 end
 
-vim.api.nvim_create_autocmd('TermOpen', {
-  group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),
-  callback = function()
-    vim.opt.number = false
-    vim.opt.relativenumber = false
-    vim.schedule(function() vim.cmd 'stopinsert' end)
-  end,
-})
-
 ---@param terminal_name string
 function TerminalMultiplexer:delete_terminal(terminal_name)
   local float_terminal = self.all_terminals[terminal_name]
@@ -123,6 +114,7 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
       vim.cmd.term [["C:\Program Files\PowerShell\7\pwsh.exe"]]
     else
       vim.cmd.term()
+      vim.cmd [[stopinsert]]
     end
     current_float_term_state.chan = vim.bo.channel
   end

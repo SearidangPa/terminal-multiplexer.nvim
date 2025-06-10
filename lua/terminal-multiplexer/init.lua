@@ -114,7 +114,7 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
       vim.cmd.term [["C:\Program Files\PowerShell\7\pwsh.exe"]]
     else
       vim.cmd.term()
-      vim.cmd [[stopinsert]]
+      vim.schedule(function() vim.cmd [[stopinsert]] end)
     end
     current_float_term_state.chan = vim.bo.channel
   end

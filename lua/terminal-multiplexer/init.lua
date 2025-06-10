@@ -44,8 +44,12 @@ function TerminalMultiplexer:delete_terminal(terminal_name)
     return
   end
 
-  vim.api.nvim_buf_delete(float_terminal.bufnr, { force = true })
-  vim.api.nvim_buf_delete(float_terminal.footer_buf, { force = true })
+  if vim.api.nvim_buf_is_valid(float_terminal.bufnr) then
+    vim.api.nvim_buf_delete(float_terminal.bufnr, { force = true })
+  end
+  if vim.api.nvim_buf_is_valid(float_terminal.footer_buf) then
+    vim.api.nvim_buf_delete(float_terminal.footer_buf, { force = true })
+  end
   self.all_terminals[terminal_name] = nil
 
   for i, name in ipairs(self.terminal_order) do
@@ -136,9 +140,7 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   vim.keymap.set('n', '>', next_term, map_opts)
   vim.keymap.set('n', '<', prev_term, map_opts)
 
-  local function send_ctrl_c()
-    vim.api.nvim_chan_send(current_float_term_state.chan, '\x03')
-  end
+  local function send_ctrl_c() vim.api.nvim_chan_send(current_float_term_state.chan, '\x03') end
 
   local function hide_terminal()
     if vim.api.nvim_win_is_valid(current_float_term_state.footer_win) then

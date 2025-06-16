@@ -154,7 +154,7 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   vim.keymap.set('n', '<C-c>', send_ctrl_c, map_opts)
   vim.keymap.set('n', 'q', hide_terminal, map_opts)
 
-  vim.api.nvim_create_autocmd('BufDelete', {
+  vim.api.nvim_create_autocmd({ 'BufDelete', 'BufHidden' }, {
     group = self.augroup,
     buffer = current_float_term_state.bufnr,
     callback = function()

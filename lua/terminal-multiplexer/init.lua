@@ -254,7 +254,6 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
     border = 'none',
   })
 
-  vim.api.nvim_win_call(float_terminal_state.win, function() vim.cmd 'normal! G' end)
   float_terminal_state.footer_win = vim.api.nvim_open_win(float_terminal_state.footer_buf, false, {
     relative = 'win',
     width = width,

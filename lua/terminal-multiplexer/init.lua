@@ -108,7 +108,6 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
 
   if is_visible then
     vim.api.nvim_win_hide(current_float_term_state.win)
-    vim.api.nvim_win_hide(current_float_term_state.footer_win)
     return self_ref.all_terminals[terminal_name]
   end
 
@@ -155,7 +154,7 @@ function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   vim.keymap.set('n', 'q', hide_terminal, map_opts)
 
   vim.api.nvim_create_autocmd({ 'BufDelete', 'BufHidden' }, {
-    group = self.augroup,
+    group = self_ref.augroup,
     buffer = current_float_term_state.bufnr,
     callback = function()
       if vim.api.nvim_buf_is_valid(current_float_term_state.footer_buf) then

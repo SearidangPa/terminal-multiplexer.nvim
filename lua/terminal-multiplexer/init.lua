@@ -210,6 +210,8 @@ function TerminalMultiplexer:_navigate_terminal(direction)
     local current_term_state = self_ref.all_terminals[current_terminal_name]
     if vim.api.nvim_win_is_valid(current_term_state.win) then
       vim.api.nvim_win_hide(current_term_state.win)
+    end
+    if vim.api.nvim_win_is_valid(current_term_state.footer_win) then
       vim.api.nvim_win_hide(current_term_state.footer_win)
     end
   end, 25)

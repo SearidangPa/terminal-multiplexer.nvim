@@ -28,7 +28,7 @@ function TerminalMultiplexer.new(opts)
   vim.cmd [[highlight TerminalNameUnderline gui=underline]]
   opts = opts or {}
   local self = setmetatable({}, TerminalMultiplexer)
-  self.all_terminals = {} --- @type table<string, TerminalMultiplexer.FloatTermState>
+  self.all_terminals = {}  --- @type table<string, TerminalMultiplexer.FloatTermState>
   self.terminal_order = {} --- @type string[]
   self.last_terminal_name = nil
   self.powershell = opts.powershell or false
@@ -122,8 +122,8 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
     current_float_term_state.chan = vim.bo.channel
   end
 
-  self_ref:_set_up_buffer_keybind(current_float_term_state)
   self_ref.last_terminal_name = terminal_name
+  self_ref:_set_up_buffer_keybind(current_float_term_state)
   return self_ref.all_terminals[terminal_name]
 end
 

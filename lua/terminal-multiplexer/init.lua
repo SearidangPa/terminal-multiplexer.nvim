@@ -111,7 +111,7 @@ function TerminalMultiplexer:spawn(terminal_name)
   if vim.bo[current_float_term_state.bufnr].buftype ~= 'terminal' then
     local cmd = vim.o.shell
     if vim.fn.has 'win32' == 1 and self_ref.powershell then
-      cmd = "C:\\Program Files\\PowerShell\\7\\pwsh.exe"
+      cmd = { 'C:\\Program Files\\PowerShell\\7\\pwsh.exe' }
     end
 
     vim.api.nvim_buf_call(current_float_term_state.bufnr, function()

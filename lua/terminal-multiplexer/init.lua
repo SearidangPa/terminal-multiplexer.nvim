@@ -84,7 +84,7 @@ end
 
 ---@param terminal_name string
 ---@return TerminalMultiplexer.FloatTermState
-function TerminalMultiplexer:toggle_float_terminal(terminal_name)
+function TerminalMultiplexer:spawn(terminal_name)
   assert(terminal_name, 'Terminal name is required')
   local self_ref = self
 
@@ -104,6 +104,33 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
     table.insert(self_ref.terminal_order, terminal_name)
   end
 
+  if current_float_term_state.bufnr == -1 or not vim.api.nvim_buf_is_valid(current_float_term_state.bufnr) then
+    current_float_term_state.bufnr = vim.api.nvim_create_buf(false, true)
+  end
+
+  if vim.bo[current_float_term_state.bufnr].buftype ~= 'terminal' then
+    local cmd = vim.o.shell
+    if vim.fn.has 'win32' == 1 and self_ref.powershell then
+      cmd = "C:\\Program Files\\PowerShell\\7\\pwsh.exe"
+    end
+
+    vim.api.nvim_buf_call(current_float_term_state.bufnr, function()
+      current_float_term_state.chan = vim.fn.termopen(cmd)
+    end)
+  end
+
+  self_ref:_set_up_buffer_keybind(current_float_term_state)
+  return current_float_term_state
+end
+
+---@param terminal_name string
+---@return TerminalMultiplexer.FloatTermState
+function TerminalMultiplexer:toggle_float_terminal(terminal_name)
+  assert(terminal_name, 'Terminal name is required')
+  local self_ref = self
+
+  local current_float_term_state = self_ref:spawn(terminal_name)
+
   local is_visible = vim.api.nvim_win_is_valid(current_float_term_state.win)
 
   if is_visible then
@@ -112,18 +139,9 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   end
 
   self_ref:_create_float_window(current_float_term_state, terminal_name)
-  if vim.bo[current_float_term_state.bufnr].buftype ~= 'terminal' then
-    if vim.fn.has 'win32' == 1 and self_ref.powershell then
-      vim.cmd.term [["C:\Program Files\PowerShell\7\pwsh.exe"]]
-    else
-      vim.cmd.term()
-    end
-    vim.schedule(function() vim.cmd [[stopinsert]] end)
-    current_float_term_state.chan = vim.bo.channel
-  end
+  vim.schedule(function() vim.cmd [[stopinsert]] end)
 
   self_ref.last_terminal_name = terminal_name
-  self_ref:_set_up_buffer_keybind(current_float_term_state)
   return self_ref.all_terminals[terminal_name]
 end
 

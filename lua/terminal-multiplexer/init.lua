@@ -28,7 +28,7 @@ function TerminalMultiplexer.new(opts)
   vim.cmd [[highlight TerminalNameUnderline gui=underline]]
   opts = opts or {}
   local self = setmetatable({}, TerminalMultiplexer)
-  self.all_terminals = {}  --- @type table<string, TerminalMultiplexer.FloatTermState>
+  self.all_terminals = {} --- @type table<string, TerminalMultiplexer.FloatTermState>
   self.terminal_order = {} --- @type string[]
   self.last_terminal_name = nil
   self.powershell = opts.powershell or false
@@ -114,9 +114,7 @@ function TerminalMultiplexer:spawn(terminal_name)
       cmd = { 'C:\\Program Files\\PowerShell\\7\\pwsh.exe' }
     end
 
-    vim.api.nvim_buf_call(current_float_term_state.bufnr, function()
-      current_float_term_state.chan = vim.fn.termopen(cmd)
-    end)
+    vim.api.nvim_buf_call(current_float_term_state.bufnr, function() current_float_term_state.chan = vim.fn.termopen(cmd) end)
   end
 
   self_ref:_set_up_buffer_keybind(current_float_term_state)
@@ -139,7 +137,19 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
   end
 
   self_ref:_create_float_window(current_float_term_state, terminal_name)
-  vim.schedule(function() vim.cmd [[stopinsert]] end)
+
+  -- Ensure the terminal PTY picks up the correct window size (notably on Windows)
+  -- by forcing Neovim to apply the current window dimensions to the job.
+  vim.schedule(function()
+    if vim.api.nvim_win_is_valid(current_float_term_state.win) then
+      vim.api.nvim_win_call(current_float_term_state.win, function()
+        vim.cmd [[startinsert]]
+        vim.cmd [[stopinsert]]
+      end)
+    else
+      vim.cmd [[stopinsert]]
+    end
+  end)
 
   self_ref.last_terminal_name = terminal_name
   return self_ref.all_terminals[terminal_name]
@@ -240,8 +250,8 @@ end
 function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal_name)
   local width = math.floor(vim.o.columns)
   local height = math.floor(vim.o.lines)
-  local row = math.floor((vim.o.columns - width))
-  local col = math.floor((vim.o.lines - height))
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
 
   if float_terminal_state.bufnr == -1 then
     float_terminal_state.bufnr = vim.api.nvim_create_buf(false, true)

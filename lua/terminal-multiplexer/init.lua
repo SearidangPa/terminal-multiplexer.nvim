@@ -270,6 +270,7 @@ function TerminalMultiplexer:_create_float_window(float_terminal_state, terminal
     style = 'minimal',
     border = 'none',
   })
+  vim.wo[float_terminal_state.win].wrap = false
 
   float_terminal_state.footer_win = vim.api.nvim_open_win(float_terminal_state.footer_buf, false, {
     relative = 'win',

@@ -138,19 +138,6 @@ function TerminalMultiplexer:toggle_float_terminal(terminal_name)
 
   self_ref:_create_float_window(current_float_term_state, terminal_name)
 
-  -- Ensure the terminal PTY picks up the correct window size (notably on Windows)
-  -- by forcing Neovim to apply the current window dimensions to the job.
-  vim.schedule(function()
-    if vim.api.nvim_win_is_valid(current_float_term_state.win) then
-      vim.api.nvim_win_call(current_float_term_state.win, function()
-        vim.cmd [[startinsert]]
-        vim.cmd [[stopinsert]]
-      end)
-    else
-      vim.cmd [[stopinsert]]
-    end
-  end)
-
   self_ref.last_terminal_name = terminal_name
   return self_ref.all_terminals[terminal_name]
 end

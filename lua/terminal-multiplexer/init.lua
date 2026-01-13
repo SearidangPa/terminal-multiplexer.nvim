@@ -95,41 +95,41 @@ function TerminalMultiplexer:spawn(terminal_name)
   assert(terminal_name, 'Terminal name is required')
   local self_ref = self
 
-  local current_float_term_state = self_ref.all_terminals[terminal_name]
-  if not current_float_term_state then
-    current_float_term_state = {
+  local current_float = self_ref.all_terminals[terminal_name]
+  if not current_float then
+    current_float = {
       bufnr = -1,
       win = -1,
       chan = 0,
       footer_buf = -1,
       footer_win = -1,
     }
-    self_ref.all_terminals[terminal_name] = current_float_term_state
+    self_ref.all_terminals[terminal_name] = current_float
   end
 
   if not vim.tbl_contains(self_ref.terminal_order, terminal_name) then
     table.insert(self_ref.terminal_order, terminal_name)
   end
 
-  local is_bufnr_invalid = current_float_term_state.bufnr == -1 or not vim.api.nvim_buf_is_valid(current_float_term_state.bufnr)
+  local is_bufnr_invalid = current_float.bufnr == -1 or not vim.api.nvim_buf_is_valid(current_float.bufnr)
 
   if is_bufnr_invalid then
-    current_float_term_state.bufnr = vim.api.nvim_create_buf(false, true)
+    current_float.bufnr = vim.api.nvim_create_buf(false, true)
   end
 
-  if vim.bo[current_float_term_state.bufnr].buftype ~= 'terminal' then
+  if vim.bo[current_float.bufnr].buftype ~= 'terminal' then
     ---@type string|string[]
     local cmd = vim.o.shell
     if vim.fn.has 'win32' == 1 and self_ref.powershell then
       cmd = { 'C:\\Program Files\\PowerShell\\7\\pwsh.exe' }
     end
 
-    local term_state = current_float_term_state
+    local term_state = current_float
     vim.api.nvim_buf_call(term_state.bufnr, function() term_state.chan = vim.fn.jobstart(cmd, { term = true }) end)
   end
 
-  self_ref:_set_up_buffer_keybind(current_float_term_state)
-  return current_float_term_state
+  self_ref:_set_up_buffer_keybind(current_float)
+  return current_float
 end
 
 ---@param terminal_name string

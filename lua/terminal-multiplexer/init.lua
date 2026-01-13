@@ -5,9 +5,9 @@
 ---@field powershell boolean
 ---@field augroup number
 ---@field ns_id number
----@field toggle_float_terminal fun(self: TerminalMultiplexer, terminal_name: string): TerminalMultiplexer.FloatTermState
+---@field toggle_float_terminal fun(self, terminal_name: string)
 ---@field search_terminal fun(self: TerminalMultiplexer): nil
----@field create_float_window fun(self: TerminalMultiplexer, float_terminal_state: TerminalMultiplexer.FloatTermState, terminal_name: string): nil
+---@field create_float_window fun(self, float_terminal_state: TerminalMultiplexer.FloatTermState, terminal_name: string)
 ---@field delete_terminal fun(self: TerminalMultiplexer, terminal_name: string): nil
 local TerminalMultiplexer = {}
 TerminalMultiplexer.__index = TerminalMultiplexer
@@ -114,7 +114,8 @@ function TerminalMultiplexer:spawn(terminal_name)
       cmd = { 'C:\\Program Files\\PowerShell\\7\\pwsh.exe' }
     end
 
-    vim.api.nvim_buf_call(current_float_term_state.bufnr, function() current_float_term_state.chan = vim.fn.termopen(cmd) end)
+    local term_state = current_float_term_state
+    vim.api.nvim_buf_call(term_state.bufnr, function() term_state.chan = vim.fn.termopen(cmd) end)
   end
 
   self_ref:_set_up_buffer_keybind(current_float_term_state)
@@ -147,7 +148,11 @@ end
 function TerminalMultiplexer:_set_up_buffer_keybind(current_float_term_state)
   local self_ref = self
 
-  local map_opts = { noremap = true, silent = true, buffer = current_float_term_state.bufnr }
+  local map_opts = {
+    noremap = true,
+    silent = true,
+    buffer = current_float_term_state.bufnr,
+  }
   local next_term = function() self_ref:_navigate_terminal(1) end
   local prev_term = function() self_ref:_navigate_terminal(-1) end
 
